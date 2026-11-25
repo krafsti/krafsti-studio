@@ -1,5 +1,9 @@
 # Novedades de Krafsti Studio
 
+## 1.33 — 2026-11-25
+- **Aplicación de escritorio para Windows y Linux**, que avisa sola cuando hay una versión nueva. Dentro de la aplicación, guardar abre la ventana «Guardar como» del sistema.
+- Icono nuevo: la K hecha de tres piezas. Ahora también sale en la pestaña del navegador.
+
 ## 1.32 — 2026-11-25
 - Limpieza por dentro, sin cambios al usarla. Se suman pruebas automáticas (`pruebas/pruebas_krafsti.py`).
 

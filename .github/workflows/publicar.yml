@@ -1,0 +1,61 @@
+# Fabrica los instaladores de Krafsti Studio (Windows y Linux) y los publica en «Releases».
+# Se pone en marcha al subir una etiqueta de versión, por ejemplo v1.33.0 (la misma versión que en
+# src-tauri/tauri.conf.json, src-tauri/Cargo.toml y package.json). También se puede lanzar a mano en «Actions».
+# Necesita el secreto TAURI_SIGNING_PRIVATE_KEY (la clave que firma las actualizaciones).
+name: Publicar la aplicación
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  compilar:
+    strategy:
+      fail-fast: false
+      matrix:
+        plataforma: [windows-latest, ubuntu-22.04]
+    runs-on: ${{ matrix.plataforma }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lo que Linux necesita para compilar
+        if: matrix.plataforma == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - run: npm ci
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ''
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'Krafsti Studio ${{ github.ref_name }}'
+          releaseBody: |
+            **Para instalar:**
+            - **Windows:** descarga el archivo que termina en `_x64-setup.exe` y ábrelo. Si Windows avisa de que «protegió su PC», pulsa «Más información» y luego «Ejecutar de todas formas» (pasa porque la aplicación no está firmada con un certificado de pago).
+            - **Linux:** el `.AppImage` funciona en casi todas las distribuciones (dale permiso de ejecución y ábrelo); el `.deb` es para Ubuntu, Debian y parecidas.
+
+            Una vez instalada, la aplicación avisa sola cuando hay una versión nueva. Las novedades están en [NOVEDADES.md](https://github.com/krafsti/krafsti-studio/blob/main/NOVEDADES.md).
+
+            *Sin instalar nada:* https://krafsti.github.io/krafsti-studio/
+          releaseDraft: false
+          prerelease: false
+          includeUpdaterJson: true
