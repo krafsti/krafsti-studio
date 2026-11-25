@@ -46,8 +46,8 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ''
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: 'Krafsti Studio ${{ github.ref_name }}'
+          tagName: v__VERSION__
+          releaseName: 'Krafsti Studio __VERSION__'
           releaseBody: |
             **Para instalar:**
             - **Windows:** descarga el archivo que termina en `_x64-setup.exe` y ábrelo. Si Windows avisa de que «protegió su PC», pulsa «Más información» y luego «Ejecutar de todas formas» (pasa porque la aplicación no está firmada con un certificado de pago).
