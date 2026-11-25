@@ -54,7 +54,7 @@ Las versiones y sus cambios están en [NOVEDADES.md](NOVEDADES.md).
 ## Para quien quiera tocar el código
 
 - Todo está en `index.html`: un solo archivo con los estilos, la página y el código. Al principio del archivo hay un comentario que explica sus partes.
-- **La aplicación de escritorio** está hecha con [Tauri](https://tauri.app) y vive en `src-tauri/`: abre `index.html` en su propia ventana. Al subir una etiqueta de versión (por ejemplo `v1.34.0`), GitHub fabrica los instaladores y los publica en Releases (`.github/workflows/publicar.yml`). La versión tiene que coincidir en `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` y `package.json`. Para compilarla en tu ordenador: `npm ci` y `npx tauri build`.
+- **La aplicación de escritorio** está hecha con [Tauri](https://tauri.app) y vive en `src-tauri/`: abre `index.html` en su propia ventana. Para publicar, se lanza a mano «Publicar la aplicación» en la pestaña Actions (o se sube una etiqueta `v*`): GitHub fabrica los instaladores y los publica en Releases con la etiqueta `v` + la versión de la aplicación (`.github/workflows/publicar.yml`). La versión tiene que coincidir en `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` y `package.json`. Para compilarla en tu ordenador: `npm ci` y `npx tauri build`.
 - **Pruebas automáticas**: `pruebas/pruebas_krafsti.py` comprueba en Chrome lo importante de la herramienta (unas 40 cosas), sin internet.
 
   ```
