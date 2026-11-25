@@ -2,17 +2,22 @@
 
 **Herramienta de diseño para cortadoras láser e impresoras UV, en un solo archivo, gratis y sin internet.**
 
+### ▶ [Abrir Krafsti Studio en el navegador](https://krafsti.github.io/krafsti-studio/)
+
+*Funciona en el navegador, sin instalar nada. Para usarla sin internet, descarga `index.html` (más abajo).*
+
 Hecha en casa por Aaron (Krafsti) con ayuda de Claude, al principio para su papá y su cortadora láser. Ahora la usan los dos para diseñar llaveros, letreros, plantillas, grabados y piezas para la impresora UV eufyMake.
 
 > *English:* Krafsti Studio is a free, offline, single-file design tool for laser cutters (LightBurn, LaserGRBL, xTool) and UV printers. It traces images to SVG, removes backgrounds, and has a small layer editor with text, shapes, a pen tool, boolean operations and text on a path. The interface is in Spanish. Free for non-commercial use; anything you make with it is yours to sell (see [LICENSE.md](LICENSE.md)).
 
 ## Cómo se usa
 
-1. Descarga **[`index.html`](index.html)** (botón «Download raw file»).
-2. Ábrelo con doble clic. Mejor en **Chrome** o **Edge**: con ellos se puede guardar el proyecto en una carpeta.
+1. **En línea:** ábrela en **[krafsti.github.io/krafsti-studio](https://krafsti.github.io/krafsti-studio/)**.
+   **Sin internet:** descarga **[`index.html`](index.html)** (botón «Download raw file») y ábrelo con doble clic.
+2. Mejor en **Chrome** o **Edge**: con ellos se puede guardar el proyecto en una carpeta.
 3. Pulsa **Guía**, arriba, y elige lo que quieres hacer: la guía te lleva paso a paso y señala cada botón.
 
-No hay que instalar nada ni tener internet: las fuentes y todo lo demás van dentro del archivo.
+No hay que instalar nada. El archivo descargado funciona sin internet: las fuentes y todo lo demás van dentro.
 
 ## Qué hace
 
