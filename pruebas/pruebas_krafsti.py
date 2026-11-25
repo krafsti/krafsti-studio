@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pruebas de Krafsti Studio (desde la 1.32). Comprueban en Chrome (Playwright) todo lo importante de la herramienta,
+"""Pruebas de Krafsti Studio (desde la 1.32; en la 1.34 se suman Guardar, carpetas, el trabajo de Vectorizar y el MCP). Comprueban en Chrome (Playwright) todo lo importante de la herramienta,
 sin internet: la prueba bloquea cualquier petición fuera del archivo y falla si la página pide algo.
 
 Uso:   python3 pruebas_krafsti.py Krafsti_Studio_v1.32.html  [--capturas carpeta]
@@ -233,6 +233,76 @@ async def main():
         vis = await pg.is_visible('#edRecover')
         if vis: await pg.click('#edRecoverYes'); await pg.wait_for_timeout(600)
         check('tras recargar, ofrece recuperar el trabajo', vis and await T("()=>__T.ED.layers.length") == 5)
+
+        print('1.34: Guardar, carpetas, trabajo de Vectorizar y asistentes')
+        labels = await ev("()=>['dl','edSvg','edDl','bgDl','cAll'].map(i=>document.getElementById(i).textContent)")
+        check('los botones dicen «Guardar»', all(t.startswith('Guardar') for t in labels) and not await ev("()=>/Descargar/.test(document.body.innerText)"), labels)
+        r = await ev("""async()=>{ const got={}; window.showSaveFilePicker=async o=>({name:o.suggestedName, async createWritable(){ return {write:async d=>{ got.d=d; }, close:async()=>{ got.closed=true; }}; }});
+          let msg=''; const ok=await __T.saveFile('prueba.svg','<svg/>','image/svg+xml',t=>msg=t);
+          window.showSaveFilePicker=async()=>{ throw new DOMException('x','AbortError'); }; let msg2=''; const ok2=await __T.saveFile('b.png',new Blob(['x']),'image/png',t=>msg2=t);
+          delete window.showSaveFilePicker; return [ok, msg, !!got.closed, got.d && got.d.size, ok2, msg2]; }""")
+        check('«Guardar» usa la ventana «Guardar como» (y cancelar no guarda)', r[0] and r[1] == 'Guardado: prueba.svg' and r[2] and r[3] == 6 and r[4] is False and 'cancelado' in r[5], r)
+        # proyecto en carpeta (con una carpeta de mentira en memoria): guardar, abrir, y abrir el archivo suelto en el navegador
+        await clear(); await ev("()=>__T.edPane('add')")
+        await ev(PNG_JS, [300, 200, "g.fillStyle='#e9c46a'; g.fillRect(0,0,300,200); g.fillStyle='#1f4e5f'; g.fillRect(50,50,100,60);", 'edFile'])
+        await pg.wait_for_timeout(600); await add('[data-shape=star]')
+        FAKE = """window.__fake=(files)=>{ const mk=pre=>({kind:'directory',name:pre||'carpeta',path:'/x/'+(pre||'carpeta'),
+            async getDirectoryHandle(n){ return mk(pre?pre+'/'+n:n); },
+            async getFileHandle(n,o){ const p=pre?pre+'/'+n:n; if(!(o&&o.create)&&!files[p]) throw new DOMException('no','NotFoundError');
+              return {kind:'file',name:n, async getFile(){ return new File([files[p]],n,{lastModified:Date.now()}); },
+                async createWritable(){ const parts=[]; return {write:async d=>{ parts.push(d); }, close:async()=>{ files[p]=new Blob(parts); }}; }}; },
+            async *entries(){ for(const p of Object.keys(files)){ const rel=pre ? (p.startsWith(pre+'/')?p.slice(pre.length+1):null) : p; if(rel && !rel.includes('/')) yield [rel, await this.getFileHandle(rel)]; } } });
+          return mk(''); };"""
+        await ev("()=>{" + FAKE + "}")
+        r = await ev("""async()=>{ const T=__T, files={}; window.__files=files; T.edFlush(); T.ED.name='prueba'; const d=__fake(files); T['(v=>edDir=v)'](d); await T.edSaveToDir(); return Object.keys(files).sort(); }""")
+        check('guardar en carpeta: el proyecto y su imagen en imagenes/', len(r) == 2 and r[0].startswith('imagenes/imagen-') and r[1] == 'prueba.krafsti', r)
+        r = await ev("""async()=>{ const T=__T; T.ED.layers.length=0; T['(v=>edDirty=v)'](false); const res=await T.edOpenFromDir(__fake(window.__files));
+          const I=T.ED.layers.find(L=>L.type==='img'), c=I && T.EDSRC.get(I.src); return [T.ED.layers.length, c ? c.width : 0, res.missing.length, !!T.edDir]; }""")
+        check('abrir carpeta: vuelven las capas con su imagen', r == [2, 300, 0, True], r)
+        r = await ev("""async()=>{ const T=__T, t=await window.__files['prueba.krafsti'].text(); T.ED.layers.length=0; let err='';
+          try{ await T.edLoadProject(t,null); }catch(e){ err=e.message; } return [err, T.ED.layers.length]; }""")
+        check('«Abrir archivo…» con un proyecto de carpeta avisa (no lo abre vacío)', 'Abrir carpeta' in r[0] and r[1] == 0, r)
+        # el trabajo de Vectorizar
+        await pg.click('#tabVec'); await ev("()=>vecPane('mode')"); await pg.click('label[for=m-ill]')
+        await ev(PNG_JS, [400, 300, "g.fillStyle='#fff'; g.fillRect(0,0,400,300); g.fillStyle='#d94f30'; g.beginPath(); g.arc(200,150,100,0,7); g.fill(); g.fillStyle='#1f4e5f'; g.fillRect(40,40,80,60); g.fillStyle='#e9c46a'; g.fillRect(260,200,90,60);", 'file'])
+        await pg.wait_for_timeout(2500)
+        await ev("()=>{ const e=document.getElementById('iColors'); e.value=6; e.dispatchEvent(new Event('input')); }"); await pg.wait_for_timeout(1500)
+        r0 = await ev("""()=>{ const S=__T.S; S.groups=[{id:1,name:'Fondo'},{id:2,name:'Dibujo'}]; S.gseq=2; S.grpOf=S.trace.layers.map((_,i)=>i%2?2:1); S.include=S.include.map((v,i)=>i!==1&&v);
+          S.stOff={'g2':0.5}; S.hgt={'g1':40}; document.getElementById('stMin').value=1.3; document.getElementById('wmm').value=123;
+          return {n:S.trace.layers.length, tones:S.trace.layers.map(L=>L.hex).join(), grp:S.grpOf.join(), inc:S.include.join()}; }""")
+        work = await ev("()=>__T.vecWorkJSON()")
+        await ev("()=>{ document.getElementById('iColors').value=16; __T.loadSrc(__T.makeSample(),'ejemplo'); }"); await pg.click('label[for=m-fill]'); await pg.wait_for_timeout(2000)
+        await ev("async(t)=>{ await __T.vecLoadWork(JSON.parse(t)); }", work); await pg.wait_for_timeout(500)
+        r1 = await ev("""()=>{ const S=__T.S; return {n:S.trace.layers.length, tones:S.trace.layers.map(L=>L.hex).join(), grp:S.grpOf.join(), inc:S.include.join(),
+          mode:document.querySelector('input[name=mode]:checked').value, k:document.getElementById('iColors').value, out:document.getElementById('iColorsOut').textContent,
+          names:S.groups.map(g=>g.name).join(), stOff:S.stOff.g2, hgt:S.hgt.g1, stMin:document.getElementById('stMin').value, w:document.getElementById('wmm').value}; }""")
+        check('trabajo de Vectorizar: vuelven tonos, grupos y lo incluido', r1['tones'] == r0['tones'] and r1['grp'] == r0['grp'] and r1['inc'] == r0['inc'] and r1['names'] == 'Fondo,Dibujo', (r0, r1))
+        check('trabajo de Vectorizar: vuelven el modo y los ajustes', r1['mode'] == 'illus' and r1['k'] == '6' and r1['out'] == '6' and r1['stOff'] == 0.5 and r1['hgt'] == 40 and r1['stMin'] == '1.3' and r1['w'] == '123', r1)
+        # asistentes (MCP): las herramientas de Componer, sin la aplicación (las de guardar en disco se prueban en ella)
+        await pg.click('#tabEd'); await clear()
+        M = lambda n, a={}: ev("async([n,a])=>{ const r=await window.__krafstiMCP.llamar(n,a); return {e:!!r.isError, t:(r.content||[]).map(c=>c.type==='text'?c.text:c.type).join('|')}; }", [n, a])
+        r = await M('nuevo_diseno', {'forma': 'circular', 'diametro_mm': 40, 'descartar_cambios': True})
+        check('asistente: lienzo circular de 40 mm', not r['e'] and await T("()=>__T.ED.shape==='circle' && Math.abs(__T.ED.W*25.4/__T.ED.ppi-40)<0.1"), r['t'])
+        await M('anadir_forma', {'tipo': 'circulo', 'ancho_mm': 40, 'relleno': '#f2e6cf'})
+        r = await M('anadir_texto', {'texto': 'Lucía', 'fuente': 'Pacifico', 'alto_mm': 7, 'alrededor_del_circulo': 'arriba'})
+        check('asistente: texto alrededor del círculo', not r['e'] and await T("()=>{ const L=__T.ED.layers.find(L=>L.type==='text'); return L && L.ring && L.ring.pos==='top' && L.t.font==='Pacifico'; }"), r['t'][:120])
+        await M('anadir_forma', {'tipo': 'circulo', 'ancho_mm': 4, 'x_mm': 20, 'y_mm': 4})
+        ids = await T("()=>__T.ED.layers.filter(L=>L.type==='shape').map(L=>L.id)")
+        r = await M('combinar_formas', {'ids': ids, 'operacion': 'restar'})
+        check('asistente: restar (agujero del llavero)', not r['e'] and await T("()=>{ const L=__T.ED.layers.find(L=>L.bname==='Resta'); return L && (L.p.more||[]).length==1; }"), r['t'][:120])
+        n0 = await T("()=>__T.ED.layers.length")
+        r = await M('anadir_texto', {'texto': 'x', 'fuente': 'Comic Sans'})
+        check('asistente: un error no deja nada a medias', r['e'] and 'Comic Sans' in r['t'] and await T("()=>__T.ED.layers.length") == n0)
+        r = await M('nuevo_diseno', {})
+        check('asistente: no borra el trabajo sin permiso', r['e'] and 'descartar_cambios' in r['t'])
+        r = await M('captura', {'ancho_px': 300})
+        check('asistente: captura del diseño', r['t'].startswith('image|'), r['t'][:60])
+        r = await M('ver_diseno')
+        d = json.loads(r['t'])
+        check('asistente: ver_diseno', len(d['capas_de_abajo_arriba']) == 2 and d['lienzo']['forma'] == 'circular', [c['id'] for c in d['capas_de_abajo_arriba']])
+        r = await M('deshacer', {'veces': 1})
+        check('asistente: deshacer', not r['e'] and await T("()=>__T.ED.layers.length") == 3, r['t'])
+        await clear()
 
         print('Guía')
         await pg.click('#hGuide'); await pg.wait_for_timeout(150)

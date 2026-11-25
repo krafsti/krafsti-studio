@@ -1,5 +1,12 @@
 # Novedades de Krafsti Studio
 
+## 1.34 — 2026-11-25
+- **«Guardar»** en lugar de «Descargar»: en la aplicación, y en Chrome y Edge, sale la ventana «Guardar como» para elegir dónde. «Guardar todos» (Convertir formato) pide una carpeta una sola vez.
+- **Carpetas sin avisos en la aplicación**: guardar en una carpeta, abrir carpeta, guardar y abrir usan las ventanas del sistema y ya no preguntan «Allow this site…». Recuerda la última carpeta. En Linux, las carpetas ahora también funcionan.
+- **Arreglo**: «Abrir archivo…» con un proyecto guardado en carpeta ya no lo abre con las imágenes vacías: en la aplicación las lee de `imagenes/` (y la carpeta queda vinculada); en el navegador avisa de que se abre con «Abrir carpeta…».
+- **Vectorizar guarda el trabajo**: «Guardar el trabajo…» y «Abrir un trabajo…» (Ctrl+S / Ctrl+O) guardan la imagen con sus ajustes, colores protegidos, grupos, tonos incluidos, láminas y alturas.
+- **Conectar con asistentes (MCP)**, en la aplicación: botón «Asistentes» para que Claude Desktop o ChatGPT de escritorio manejen Componer (textos, formas, imágenes, unir y restar, texto alrededor del círculo, exportar, guardar, captura). Apagado de inicio y solo en el propio ordenador.
+
 ## 1.33 — 2026-11-25
 - **Aplicación de escritorio para Windows y Linux**, que avisa sola cuando hay una versión nueva. Dentro de la aplicación, guardar abre la ventana «Guardar como» del sistema.
 - Icono nuevo: la K hecha de tres piezas. Ahora también sale en la pestaña del navegador.
