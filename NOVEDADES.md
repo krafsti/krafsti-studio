@@ -1,5 +1,8 @@
 # Novedades de Krafsti Studio
 
+## 1.34.2 — 2026-11-26
+- **Otro arreglo para ChatGPT de escritorio:** su intermediario pone en la respuesta la etiqueta «chunked» pero la manda entera, sin trocear. El puente ya no se fía de la etiqueta: se queda con la forma que dé una respuesta completa.
+
 ## 1.34.1 — 2026-11-26
 - **Arreglo de la conexión con asistentes desde ChatGPT de escritorio (Windows):** ChatGPT pasa las conexiones por un intermediario que entrega las respuestas «por trozos» (chunked), y el puente `--mcp` no las entendía («Respuesta extraña de Krafsti Studio (código 200)»). Ahora las entiende, y si algo no cuadra el aviso enseña lo que llegó.
 

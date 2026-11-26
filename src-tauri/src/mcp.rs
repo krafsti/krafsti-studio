@@ -297,11 +297,11 @@ fn reenviar(m: &Value) -> Result<Value, String> {
             Err(_) => return Err("Krafsti Studio no contestó a tiempo.".into()),
         }
     }
-    let (estado, cuerpo) = separar_respuesta(&buf).ok_or_else(|| format!("Respuesta incompleta de Krafsti Studio: «{}»", muestra(&buf)))?;
+    let estado = estado_http(&buf).ok_or_else(|| format!("Respuesta incompleta de Krafsti Studio: «{}»", muestra(&buf)))?;
     if estado == "401" {
         return Err("La clave guardada no coincide: en Krafsti Studio apaga y vuelve a encender «Asistentes».".into());
     }
-    serde_json::from_slice(&cuerpo).map_err(|e| format!("Respuesta extraña de Krafsti Studio (código {estado}, {e}): «{}»", muestra(&buf)))
+    cuerpo_json(&buf).ok_or_else(|| format!("Respuesta extraña de Krafsti Studio (código {estado}): «{}»", muestra(&buf)))
 }
 
 fn muestra(b: &[u8]) -> String {
@@ -345,46 +345,57 @@ fn deschunk(mut d: &[u8]) -> Option<Vec<u8>> {
     }
 }
 
-fn respuesta_completa(buf: &[u8]) -> bool {
-    let Some((ini, cab)) = cabeceras(buf) else { return false };
+// El cuerpo se busca de varias formas, porque el intermediario de ChatGPT puede poner «chunked» en la
+// cabecera y mandar el cuerpo entero sin trocear: troceado, con su largo, o todo lo que venga detrás.
+// Vale la primera que sea un JSON entero.
+fn candidatos(buf: &[u8]) -> Vec<Vec<u8>> {
+    let Some((ini, cab)) = cabeceras(buf) else { return vec![] };
+    let resto = &buf[ini..];
+    let mut v = Vec::new();
     if es_chunked(&cab) {
-        return deschunk(&buf[ini..]).is_some();
+        if let Some(d) = deschunk(resto) {
+            v.push(d);
+        }
     }
-    match valor(&cab, "content-length").and_then(|v| v.parse::<usize>().ok()) {
-        Some(n) => buf.len() >= ini + n,
-        None => false, // sin largo: hasta que se cierre
+    if let Some(n) = valor(&cab, "content-length").and_then(|x| x.parse::<usize>().ok()) {
+        if let Some(d) = resto.get(..n) {
+            v.push(d.to_vec());
+        }
     }
+    v.push(resto.to_vec());
+    v
 }
 
-fn separar_respuesta(buf: &[u8]) -> Option<(String, Vec<u8>)> {
-    let (ini, cab) = cabeceras(buf)?;
-    let estado = cab.split_whitespace().nth(1).unwrap_or("").to_string();
-    let resto = &buf[ini..];
-    let cuerpo = if es_chunked(&cab) {
-        deschunk(resto)?
-    } else if let Some(n) = valor(&cab, "content-length").and_then(|v| v.parse::<usize>().ok()) {
-        resto.get(..n)?.to_vec()
-    } else {
-        resto.to_vec()
-    };
-    Some((estado, cuerpo))
+fn cuerpo_json(buf: &[u8]) -> Option<Value> {
+    candidatos(buf).iter().find_map(|c| serde_json::from_slice::<Value>(c).ok())
+}
+
+fn respuesta_completa(buf: &[u8]) -> bool {
+    cuerpo_json(buf).is_some()
+}
+
+fn estado_http(buf: &[u8]) -> Option<String> {
+    cabeceras(buf).map(|(_, cab)| cab.split_whitespace().nth(1).unwrap_or("").to_string())
 }
 
 #[cfg(test)]
 mod pruebas {
     use super::*;
     #[test]
-    fn lee_chunked_y_normal() {
+    fn lee_respuestas() {
+        // troceada de verdad
         let c = b"HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nserver: x\r\n\r\n5\r\n{\"a\":\r\n2\r\n1}\r\n0\r\n\r\n";
-        assert!(respuesta_completa(c));
-        let (e, b) = separar_respuesta(c).unwrap();
-        assert_eq!(e, "200");
-        assert_eq!(b, b"{\"a\":1}");
-        assert!(!respuesta_completa(&c[..c.len() - 5]));
+        assert_eq!(cuerpo_json(c), Some(json!({"a": 1})));
+        assert!(!respuesta_completa(&c[..c.len() - 9]));
+        // con su largo
         let n = b"HTTP/1.1 200 OK\r\nContent-Length: 7\r\n\r\n{\"a\":1}";
-        assert!(respuesta_completa(n));
-        assert_eq!(separar_respuesta(n).unwrap().1, b"{\"a\":1}");
+        assert_eq!(cuerpo_json(n), Some(json!({"a": 1})));
         assert!(!respuesta_completa(&n[..n.len() - 1]));
+        // dice «chunked» pero llega entera (lo que hace el intermediario de ChatGPT)
+        let m = b"HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nServer: tiny-http (Rust)\r\n\r\n{\"id\":3,\"r\":\"\\n\"}";
+        assert_eq!(cuerpo_json(m), Some(json!({"id": 3, "r": "\n"})));
+        assert!(!respuesta_completa(&m[..m.len() - 2]));
+        assert_eq!(estado_http(m).as_deref(), Some("200"));
     }
 }
 
