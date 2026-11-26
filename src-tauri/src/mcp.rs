@@ -281,37 +281,111 @@ fn reenviar(m: &Value) -> Result<Value, String> {
         cuerpo.len()
     );
     s.write_all(pet.as_bytes()).map_err(|_| NO_ABIERTA.to_string())?;
+    // se lee hasta que el servidor cierra (o hasta tener el cuerpo entero). Ojo: entre el asistente y la
+    // aplicación puede haber un intermediario (ChatGPT de escritorio, en Windows, pasa las conexiones por uno)
+    // que cambia la respuesta a «Transfer-Encoding: chunked» y pone las cabeceras en minúsculas.
     let mut buf = Vec::new();
     let mut trozo = [0u8; 65536];
-    let mut largo: Option<(usize, usize)> = None; // (fin de la cabecera, largo del cuerpo)
     loop {
-        if let Some((ini, n)) = largo {
-            if buf.len() >= ini + n {
-                break;
-            }
+        if respuesta_completa(&buf) {
+            break;
         }
         match s.read(&mut trozo) {
             Ok(0) => break,
             Ok(k) => buf.extend_from_slice(&trozo[..k]),
+            Err(_) if !buf.is_empty() => break,
             Err(_) => return Err("Krafsti Studio no contestó a tiempo.".into()),
         }
-        if largo.is_none() {
-            if let Some(p) = buf.windows(4).position(|w| w == b"\r\n\r\n") {
-                let cab = String::from_utf8_lossy(&buf[..p]).to_lowercase();
-                let n = cab
-                    .lines()
-                    .find_map(|l| l.strip_prefix("content-length:").and_then(|v| v.trim().parse().ok()))
-                    .unwrap_or(usize::MAX);
-                largo = Some((p + 4, n));
-            }
-        }
     }
-    let (ini, _) = largo.ok_or("Respuesta extraña de Krafsti Studio.")?;
-    let estado = String::from_utf8_lossy(&buf[..ini]).split_whitespace().nth(1).unwrap_or("").to_string();
+    let (estado, cuerpo) = separar_respuesta(&buf).ok_or_else(|| format!("Respuesta incompleta de Krafsti Studio: «{}»", muestra(&buf)))?;
     if estado == "401" {
         return Err("La clave guardada no coincide: en Krafsti Studio apaga y vuelve a encender «Asistentes».".into());
     }
-    serde_json::from_slice(&buf[ini..]).map_err(|_| format!("Respuesta extraña de Krafsti Studio (código {estado})."))
+    serde_json::from_slice(&cuerpo).map_err(|e| format!("Respuesta extraña de Krafsti Studio (código {estado}, {e}): «{}»", muestra(&buf)))
+}
+
+fn muestra(b: &[u8]) -> String {
+    let t: String = String::from_utf8_lossy(b).chars().take(300).collect();
+    t.replace('\r', "\\r").replace('\n', "\\n")
+}
+
+fn cabeceras(buf: &[u8]) -> Option<(usize, String)> {
+    let p = buf.windows(4).position(|w| w == b"\r\n\r\n")?;
+    Some((p + 4, String::from_utf8_lossy(&buf[..p]).to_ascii_lowercase()))
+}
+
+fn valor<'a>(cab: &'a str, nombre: &str) -> Option<&'a str> {
+    cab.lines().find_map(|l| {
+        let (k, v) = l.split_once(':')?;
+        if k.trim() == nombre { Some(v.trim()) } else { None }
+    })
+}
+
+fn es_chunked(cab: &str) -> bool {
+    valor(cab, "transfer-encoding").map(|v| v.contains("chunked")).unwrap_or(false)
+}
+
+// deshace «chunked»: tamaño en hexadecimal, salto, datos, salto… hasta un trozo de tamaño 0.
+// Devuelve None si aún no ha llegado entero.
+fn deschunk(mut d: &[u8]) -> Option<Vec<u8>> {
+    let mut out = Vec::new();
+    loop {
+        let p = d.windows(2).position(|w| w == b"\r\n")?;
+        let linea = String::from_utf8_lossy(&d[..p]);
+        let n = usize::from_str_radix(linea.split(';').next().unwrap_or("").trim(), 16).ok()?;
+        d = &d[p + 2..];
+        if n == 0 {
+            return Some(out);
+        }
+        if d.len() < n + 2 {
+            return None;
+        }
+        out.extend_from_slice(&d[..n]);
+        d = &d[n + 2..];
+    }
+}
+
+fn respuesta_completa(buf: &[u8]) -> bool {
+    let Some((ini, cab)) = cabeceras(buf) else { return false };
+    if es_chunked(&cab) {
+        return deschunk(&buf[ini..]).is_some();
+    }
+    match valor(&cab, "content-length").and_then(|v| v.parse::<usize>().ok()) {
+        Some(n) => buf.len() >= ini + n,
+        None => false, // sin largo: hasta que se cierre
+    }
+}
+
+fn separar_respuesta(buf: &[u8]) -> Option<(String, Vec<u8>)> {
+    let (ini, cab) = cabeceras(buf)?;
+    let estado = cab.split_whitespace().nth(1).unwrap_or("").to_string();
+    let resto = &buf[ini..];
+    let cuerpo = if es_chunked(&cab) {
+        deschunk(resto)?
+    } else if let Some(n) = valor(&cab, "content-length").and_then(|v| v.parse::<usize>().ok()) {
+        resto.get(..n)?.to_vec()
+    } else {
+        resto.to_vec()
+    };
+    Some((estado, cuerpo))
+}
+
+#[cfg(test)]
+mod pruebas {
+    use super::*;
+    #[test]
+    fn lee_chunked_y_normal() {
+        let c = b"HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nserver: x\r\n\r\n5\r\n{\"a\":\r\n2\r\n1}\r\n0\r\n\r\n";
+        assert!(respuesta_completa(c));
+        let (e, b) = separar_respuesta(c).unwrap();
+        assert_eq!(e, "200");
+        assert_eq!(b, b"{\"a\":1}");
+        assert!(!respuesta_completa(&c[..c.len() - 5]));
+        let n = b"HTTP/1.1 200 OK\r\nContent-Length: 7\r\n\r\n{\"a\":1}";
+        assert!(respuesta_completa(n));
+        assert_eq!(separar_respuesta(n).unwrap().1, b"{\"a\":1}");
+        assert!(!respuesta_completa(&n[..n.len() - 1]));
+    }
 }
 
 fn responder_puente(m: &Value) -> Option<Value> {

@@ -1,5 +1,8 @@
 # Novedades de Krafsti Studio
 
+## 1.34.1 — 2026-11-26
+- **Arreglo de la conexión con asistentes desde ChatGPT de escritorio (Windows):** ChatGPT pasa las conexiones por un intermediario que entrega las respuestas «por trozos» (chunked), y el puente `--mcp` no las entendía («Respuesta extraña de Krafsti Studio (código 200)»). Ahora las entiende, y si algo no cuadra el aviso enseña lo que llegó.
+
 ## 1.34 — 2026-11-25
 - **«Guardar»** en lugar de «Descargar»: en la aplicación, y en Chrome y Edge, sale la ventana «Guardar como» para elegir dónde. «Guardar todos» (Convertir formato) pide una carpeta una sola vez.
 - **Carpetas sin avisos en la aplicación**: guardar en una carpeta, abrir carpeta, guardar y abrir usan las ventanas del sistema y ya no preguntan «Allow this site…». Recuerda la última carpeta. En Linux, las carpetas ahora también funcionan.
