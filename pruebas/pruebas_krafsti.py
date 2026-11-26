@@ -302,6 +302,16 @@ async def main():
         check('asistente: ver_diseno', len(d['capas_de_abajo_arriba']) == 2 and d['lienzo']['forma'] == 'circular', [c['id'] for c in d['capas_de_abajo_arriba']])
         r = await M('deshacer', {'veces': 1})
         check('asistente: deshacer', not r['e'] and await T("()=>__T.ED.layers.length") == 3, r['t'])
+        # (1.35) la resolución va dentro del PNG y del JPG
+        r = await ev("""async()=>{ const T=__T; T.ED.ppi=300; const out={};
+          const p=new Uint8Array(await (await T.edBlob('png')).arrayBuffer()); let i=8, n=0, ppm=0, ok=true;
+          while(i<p.length){ const dv=new DataView(p.buffer,i), len=dv.getUint32(0), ty=String.fromCharCode(...p.subarray(i+4,i+8));
+            if(ty==='pHYs'){ n++; ppm=new DataView(p.buffer,i+8).getUint32(0); const c=T.crc32(p.subarray(i+4,i+8+len)); ok=c===new DataView(p.buffer,i+8+len).getUint32(0); }
+            if(ty==='IEND') break; i+=12+len; }
+          const j=new Uint8Array(await (await T.edBlob('jpg')).arrayBuffer());
+          const img=await createImageBitmap(await T.edBlob('png'));
+          return [n, ppm, ok, j[13], (j[14]<<8)|j[15], img.width===T.ED.W]; }""")
+        check('PNG y JPG llevan dentro los 300 ppp', r == [1, 11811, True, 1, 300, True], r)
         await clear()
 
         print('Guía')

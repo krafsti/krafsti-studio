@@ -29,7 +29,11 @@ La aplicación se abre en su propia ventana y avisa sola cuando hay una versión
 
 ### Conectar con asistentes de IA (MCP)
 
-La aplicación puede dejar que un asistente de tu ordenador (**Claude Desktop** o la **aplicación de ChatGPT**) maneje Krafsti Studio: crear textos y formas, unir y restar, poner un texto alrededor de un círculo, exportar el SVG o guardar. Va **apagado** hasta que lo enciendes con el botón **Asistentes** de arriba, y solo acepta programas del propio ordenador. Esa misma ventana explica cómo añadirlo en cada asistente (es el propio programa con `--mcp`). Luego basta con pedir, por ejemplo: «hazme un llavero circular de 40 mm con “Lucía” arriba y un agujero para la anilla».
+La aplicación puede dejar que un asistente de tu ordenador (**Claude Desktop** o la **aplicación de ChatGPT**) maneje Krafsti Studio: crear textos y formas, unir y restar, poner un texto alrededor de un círculo, exportar el SVG o guardar. Va **apagado** hasta que lo enciendes con el botón **Asistentes** de arriba, y solo acepta programas del propio ordenador. Esa misma ventana explica cómo añadirlo en cada asistente (es el propio programa con `--mcp`):
+- **Claude Desktop:** Ajustes → Desarrollador → Editar configuración, y se añade `krafsti-studio` con la ruta del programa y `--mcp`.
+- **ChatGPT (aplicación de escritorio, vale la cuenta gratuita):** Settings → MCP servers → Add → Add MCP server → Type **STDIO**, «Command to launch» la ruta del programa y «Arguments» `--mcp`. Se usa desde el modo **Work**.
+
+Revisa siempre números y nombres antes de imprimir: el asistente puede equivocarse al leerlos de una imagen. Luego basta con pedir, por ejemplo: «hazme un llavero circular de 40 mm con “Lucía” arriba y un agujero para la anilla».
 
 ## Qué hace
 
@@ -60,7 +64,7 @@ Las versiones y sus cambios están en [NOVEDADES.md](NOVEDADES.md).
 
 - Todo está en `index.html`: un solo archivo con los estilos, la página y el código. Al principio del archivo hay un comentario que explica sus partes.
 - **La aplicación de escritorio** está hecha con [Tauri](https://tauri.app) y vive en `src-tauri/`: abre `index.html` en su propia ventana. `src-tauri/src/lib.rs` lee y escribe archivos y carpetas; `src-tauri/src/mcp.rs` es la conexión con asistentes (servidor MCP en `http://127.0.0.1:47321/mcp` y el puente `--mcp` por stdio), y sus herramientas se describen en `src-tauri/src/herramientas_mcp.json` y se hacen en `index.html` (busca «asistentes (MCP, 1.34)»). Para publicar, se lanza a mano «Publicar la aplicación» en la pestaña Actions (o se sube una etiqueta `v*`): GitHub fabrica los instaladores y los publica en Releases con la etiqueta `v` + la versión de la aplicación (`.github/workflows/publicar.yml`). La versión tiene que coincidir en `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` y `package.json`. Para compilarla en tu ordenador: `npm ci` y `npx tauri build`.
-- **Pruebas automáticas**: `pruebas/pruebas_krafsti.py` comprueba en Chrome lo importante de la herramienta (unas 55 cosas), sin internet.
+- **Pruebas automáticas**: `pruebas/pruebas_krafsti.py` comprueba en Chrome lo importante de la herramienta (unas 56 cosas), sin internet.
 
   ```
   pip install playwright

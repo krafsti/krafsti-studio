@@ -1,5 +1,9 @@
 # Novedades de Krafsti Studio
 
+## 1.35 — 2026-11-26
+- **El PNG y el JPG llevan dentro su resolución** (300 ppp, o la que tenga el lienzo): eufyMake Studio, LightBurn y demás los abren a su tamaño real. Antes suponían 72 o 96 ppp y un llavero de 50 mm salía de unos 21 cm.
+- **La ventana «Asistentes» explica paso a paso cómo añadir Krafsti Studio en la aplicación de ChatGPT** (vale la cuenta gratuita; se usa desde el modo Work), y recuerda revisar números y nombres antes de imprimir.
+
 ## 1.34.2 — 2026-11-26
 - **Otro arreglo para ChatGPT de escritorio:** su intermediario pone en la respuesta la etiqueta «chunked» pero la manda entera, sin trocear. El puente ya no se fía de la etiqueta: se queda con la forma que dé una respuesta completa.
 
