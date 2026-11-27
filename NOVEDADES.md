@@ -1,5 +1,12 @@
 # Novedades de Krafsti Studio
 
+## 1.36 — 2026-11-27
+- **Empieza en Componer**, y las pestañas van en este orden: Componer, Vectorizar, Retocar, Convertir («Convertir formato» pasa a «Convertir»).
+- **Fusión de capas:** en la pestaña Imagen, nuevo apartado «Fusión» con los 27 modos de Photoshop (Multiplicar, Trama, Superponer, Luz suave, Color, Tono, Saturación, Luminosidad, Diferencia, Restar, Dividir, Disolver…), en castellano y con su nombre en inglés, y ◀ ▶ para probarlos uno tras otro. Vale para cualquier capa y se mezcla con todo lo de debajo. Sale igual en el PNG y el JPG; en el SVG van los que el SVG entiende.
+- **Quitar selección:** botón en la barra de arriba (solo aparece cuando hay una selección) y también con Esc.
+- **Fondo:** botón en Añadir que crea una capa «Fondo» de color o degradado, que llena el lienzo (rectangular o redondo), va detrás de todo y sigue al lienzo si cambia de tamaño.
+- Asistentes: `cambiar_capa` acepta `modo_fusion` y hay una herramienta nueva, `anadir_fondo`.
+
 ## 1.35 — 2026-11-26
 - **El PNG y el JPG llevan dentro su resolución** (300 ppp, o la que tenga el lienzo): eufyMake Studio, LightBurn y demás los abren a su tamaño real. Antes suponían 72 o 96 ppp y un llavero de 50 mm salía de unos 21 cm.
 - **La ventana «Asistentes» explica paso a paso cómo añadir Krafsti Studio en la aplicación de ChatGPT** (vale la cuenta gratuita; se usa desde el modo Work), y recuerda revisar números y nombres antes de imprimir.

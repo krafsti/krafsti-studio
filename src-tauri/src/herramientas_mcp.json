@@ -3,209 +3,635 @@
     "name": "ver_diseno",
     "title": "Ver el diseño",
     "description": "Describe lo que hay abierto en Componer: el lienzo (medidas en mm, rectangular o circular, fondo, resolución), el proyecto (nombre, si está guardado y dónde) y la lista de capas de abajo arriba, con su id, tipo, posición y medida en mm, giro, color y, si es texto, lo que dice. Úsala al empezar y siempre que necesites los id de las capas.",
-    "inputSchema": {"type": "object", "properties": {}},
-    "annotations": {"readOnlyHint": true}
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
   },
   {
     "name": "captura",
     "title": "Captura del diseño",
     "description": "Devuelve una imagen PNG del diseño tal como se exporta (sin reglas ni guías), para mirar cómo va quedando.",
-    "inputSchema": {"type": "object", "properties": {
-      "ancho_px": {"type": "integer", "minimum": 100, "maximum": 2000, "description": "Ancho de la imagen (800 si no se dice)."}
-    }},
-    "annotations": {"readOnlyHint": true}
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "ancho_px": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 2000,
+          "description": "Ancho de la imagen (800 si no se dice)."
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
   },
   {
     "name": "lista_de_fuentes",
     "title": "Fuentes disponibles",
     "description": "Lista las fuentes de letra que se pueden usar en los textos, por grupos (de palo, con remate, escritas a mano, divertidas, del ordenador).",
-    "inputSchema": {"type": "object", "properties": {}},
-    "annotations": {"readOnlyHint": true}
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
   },
   {
     "name": "nuevo_diseno",
     "title": "Empezar un diseño nuevo",
     "description": "Empieza un diseño nuevo en Componer (quita todas las capas). Si hay cambios sin guardar, falla salvo que se pase descartar_cambios: true; pregunta antes al usuario.",
-    "inputSchema": {"type": "object", "properties": {
-      "nombre": {"type": "string", "description": "Nombre del proyecto."},
-      "forma": {"type": "string", "enum": ["rectangular", "circular"]},
-      "ancho_mm": {"type": "number", "description": "Ancho del lienzo (rectangular)."},
-      "alto_mm": {"type": "number", "description": "Alto del lienzo (rectangular)."},
-      "diametro_mm": {"type": "number", "description": "Diámetro del lienzo (circular), p. ej. 40 para un llavero."},
-      "fondo": {"type": "string", "description": "«transparente» (lo normal), «blanco» o un color como #f2e6cf."},
-      "ppp": {"type": "integer", "minimum": 30, "maximum": 2400, "description": "Resolución en puntos por pulgada (300 si no se dice)."},
-      "descartar_cambios": {"type": "boolean", "description": "Seguir aunque haya cambios sin guardar."}
-    }}
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "nombre": {
+          "type": "string",
+          "description": "Nombre del proyecto."
+        },
+        "forma": {
+          "type": "string",
+          "enum": [
+            "rectangular",
+            "circular"
+          ]
+        },
+        "ancho_mm": {
+          "type": "number",
+          "description": "Ancho del lienzo (rectangular)."
+        },
+        "alto_mm": {
+          "type": "number",
+          "description": "Alto del lienzo (rectangular)."
+        },
+        "diametro_mm": {
+          "type": "number",
+          "description": "Diámetro del lienzo (circular), p. ej. 40 para un llavero."
+        },
+        "fondo": {
+          "type": "string",
+          "description": "«transparente» (lo normal), «blanco» o un color como #f2e6cf."
+        },
+        "ppp": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 2400,
+          "description": "Resolución en puntos por pulgada (300 si no se dice)."
+        },
+        "descartar_cambios": {
+          "type": "boolean",
+          "description": "Seguir aunque haya cambios sin guardar."
+        }
+      }
+    }
   },
   {
     "name": "cambiar_lienzo",
     "title": "Cambiar el lienzo",
     "description": "Cambia el lienzo sin tocar las capas: forma (rectangular o circular), medidas en mm, fondo o resolución. El circular crece o encoge desde el centro.",
-    "inputSchema": {"type": "object", "properties": {
-      "forma": {"type": "string", "enum": ["rectangular", "circular"]},
-      "ancho_mm": {"type": "number"},
-      "alto_mm": {"type": "number"},
-      "diametro_mm": {"type": "number"},
-      "fondo": {"type": "string", "description": "«transparente», «blanco» o un color #rrggbb."},
-      "ppp": {"type": "integer", "minimum": 30, "maximum": 2400},
-      "margen_mm": {"type": "number", "description": "Margen de seguridad que se ve en el lienzo (0 lo quita)."}
-    }}
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "forma": {
+          "type": "string",
+          "enum": [
+            "rectangular",
+            "circular"
+          ]
+        },
+        "ancho_mm": {
+          "type": "number"
+        },
+        "alto_mm": {
+          "type": "number"
+        },
+        "diametro_mm": {
+          "type": "number"
+        },
+        "fondo": {
+          "type": "string",
+          "description": "«transparente», «blanco» o un color #rrggbb."
+        },
+        "ppp": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 2400
+        },
+        "margen_mm": {
+          "type": "number",
+          "description": "Margen de seguridad que se ve en el lienzo (0 lo quita)."
+        }
+      }
+    }
   },
   {
     "name": "anadir_texto",
     "title": "Añadir un texto",
     "description": "Añade una capa de texto. Puede ir recto, curvado en arco o alrededor del borde de un lienzo circular (arriba o abajo, como en un llavero o una medalla). Devuelve el id de la capa nueva.",
-    "inputSchema": {"type": "object", "required": ["texto"], "properties": {
-      "texto": {"type": "string", "description": "Lo que dice. Puede tener varias líneas (\\n)."},
-      "fuente": {"type": "string", "description": "Nombre de la fuente (ver lista_de_fuentes). Bebas Neue si no se dice."},
-      "alto_mm": {"type": "number", "description": "Alto aproximado de las mayúsculas en mm."},
-      "color": {"type": "string", "description": "Color #rrggbb."},
-      "negrita": {"type": "boolean"},
-      "cursiva": {"type": "boolean"},
-      "alineacion": {"type": "string", "enum": ["izquierda", "centro", "derecha"]},
-      "espacio_letras": {"type": "number", "description": "Espacio entre letras, de -20 a 100 (0 normal)."},
-      "x_mm": {"type": "number", "description": "Centro del texto, desde el borde izquierdo (el centro del lienzo si no se dice)."},
-      "y_mm": {"type": "number", "description": "Centro del texto, desde el borde de arriba."},
-      "giro": {"type": "number", "description": "Grados, en el sentido de las agujas del reloj."},
-      "arco": {"type": "number", "description": "Curvar en arco, de -100 (hacia abajo) a 100 (hacia arriba). No se usa con alrededor_del_circulo."},
-      "alrededor_del_circulo": {"type": "string", "enum": ["arriba", "abajo"], "description": "Pone el texto siguiendo el borde del círculo del lienzo; los dos se leen de izquierda a derecha."},
-      "separacion_borde_mm": {"type": "number", "description": "Con alrededor_del_circulo: distancia del texto al borde (1,5 mm si no se dice)."},
-      "contorno_mm": {"type": "number", "description": "Grosor de un contorno alrededor de las letras (0 sin contorno)."},
-      "color_contorno": {"type": "string"}
-    }}
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "texto"
+      ],
+      "properties": {
+        "texto": {
+          "type": "string",
+          "description": "Lo que dice. Puede tener varias líneas (\\n)."
+        },
+        "fuente": {
+          "type": "string",
+          "description": "Nombre de la fuente (ver lista_de_fuentes). Bebas Neue si no se dice."
+        },
+        "alto_mm": {
+          "type": "number",
+          "description": "Alto aproximado de las mayúsculas en mm."
+        },
+        "color": {
+          "type": "string",
+          "description": "Color #rrggbb."
+        },
+        "negrita": {
+          "type": "boolean"
+        },
+        "cursiva": {
+          "type": "boolean"
+        },
+        "alineacion": {
+          "type": "string",
+          "enum": [
+            "izquierda",
+            "centro",
+            "derecha"
+          ]
+        },
+        "espacio_letras": {
+          "type": "number",
+          "description": "Espacio entre letras, de -20 a 100 (0 normal)."
+        },
+        "x_mm": {
+          "type": "number",
+          "description": "Centro del texto, desde el borde izquierdo (el centro del lienzo si no se dice)."
+        },
+        "y_mm": {
+          "type": "number",
+          "description": "Centro del texto, desde el borde de arriba."
+        },
+        "giro": {
+          "type": "number",
+          "description": "Grados, en el sentido de las agujas del reloj."
+        },
+        "arco": {
+          "type": "number",
+          "description": "Curvar en arco, de -100 (hacia abajo) a 100 (hacia arriba). No se usa con alrededor_del_circulo."
+        },
+        "alrededor_del_circulo": {
+          "type": "string",
+          "enum": [
+            "arriba",
+            "abajo"
+          ],
+          "description": "Pone el texto siguiendo el borde del círculo del lienzo; los dos se leen de izquierda a derecha."
+        },
+        "separacion_borde_mm": {
+          "type": "number",
+          "description": "Con alrededor_del_circulo: distancia del texto al borde (1,5 mm si no se dice)."
+        },
+        "contorno_mm": {
+          "type": "number",
+          "description": "Grosor de un contorno alrededor de las letras (0 sin contorno)."
+        },
+        "color_contorno": {
+          "type": "string"
+        }
+      }
+    }
   },
   {
     "name": "anadir_forma",
     "title": "Añadir una forma",
     "description": "Añade una forma: rectángulo (con esquinas redondeadas si se quiere), círculo o elipse, polígono, estrella o línea. Devuelve el id de la capa nueva.",
-    "inputSchema": {"type": "object", "required": ["tipo"], "properties": {
-      "tipo": {"type": "string", "enum": ["rectangulo", "circulo", "poligono", "estrella", "linea"]},
-      "ancho_mm": {"type": "number", "description": "Ancho (en la línea, su largo)."},
-      "alto_mm": {"type": "number", "description": "Alto (igual que el ancho si no se dice; en un círculo, si se da distinto sale una elipse)."},
-      "x_mm": {"type": "number", "description": "Centro, desde el borde izquierdo (el centro del lienzo si no se dice)."},
-      "y_mm": {"type": "number", "description": "Centro, desde el borde de arriba."},
-      "giro": {"type": "number"},
-      "relleno": {"type": "string", "description": "Color #rrggbb, o «ninguno» para dejarla hueca."},
-      "contorno_mm": {"type": "number", "description": "Grosor del contorno (0 sin contorno). Un rectángulo sin relleno y con contorno sirve de marco."},
-      "color_contorno": {"type": "string"},
-      "esquinas": {"type": "number", "description": "Rectángulo: redondeo de las esquinas de 0 a 50 (%)."},
-      "lados": {"type": "integer", "minimum": 3, "maximum": 16, "description": "Polígono: lados; estrella: puntas."}
-    }}
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "tipo"
+      ],
+      "properties": {
+        "tipo": {
+          "type": "string",
+          "enum": [
+            "rectangulo",
+            "circulo",
+            "poligono",
+            "estrella",
+            "linea"
+          ]
+        },
+        "ancho_mm": {
+          "type": "number",
+          "description": "Ancho (en la línea, su largo)."
+        },
+        "alto_mm": {
+          "type": "number",
+          "description": "Alto (igual que el ancho si no se dice; en un círculo, si se da distinto sale una elipse)."
+        },
+        "x_mm": {
+          "type": "number",
+          "description": "Centro, desde el borde izquierdo (el centro del lienzo si no se dice)."
+        },
+        "y_mm": {
+          "type": "number",
+          "description": "Centro, desde el borde de arriba."
+        },
+        "giro": {
+          "type": "number"
+        },
+        "relleno": {
+          "type": "string",
+          "description": "Color #rrggbb, o «ninguno» para dejarla hueca."
+        },
+        "contorno_mm": {
+          "type": "number",
+          "description": "Grosor del contorno (0 sin contorno). Un rectángulo sin relleno y con contorno sirve de marco."
+        },
+        "color_contorno": {
+          "type": "string"
+        },
+        "esquinas": {
+          "type": "number",
+          "description": "Rectángulo: redondeo de las esquinas de 0 a 50 (%)."
+        },
+        "lados": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 16,
+          "description": "Polígono: lados; estrella: puntas."
+        }
+      }
+    }
   },
   {
     "name": "anadir_imagen",
     "title": "Añadir una imagen",
     "description": "Añade una imagen (PNG, JPG, WEBP…) como capa: desde un archivo del ordenador (ruta) o desde sus datos en base64. Devuelve el id de la capa nueva.",
-    "inputSchema": {"type": "object", "properties": {
-      "ruta": {"type": "string", "description": "Ruta completa del archivo en el ordenador."},
-      "base64": {"type": "string", "description": "Los datos de la imagen en base64 (si no hay ruta)."},
-      "nombre": {"type": "string"},
-      "lienzo_como_la_imagen": {"type": "boolean", "description": "Si es la primera capa de un lienzo rectangular, el lienzo pasa a tener el tamaño de la imagen (si no, el lienzo se queda como está)."},
-      "ancho_mm": {"type": "number", "description": "Ancho que tendrá (sin deformarla)."},
-      "x_mm": {"type": "number"},
-      "y_mm": {"type": "number"}
-    }}
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "ruta": {
+          "type": "string",
+          "description": "Ruta completa del archivo en el ordenador."
+        },
+        "base64": {
+          "type": "string",
+          "description": "Los datos de la imagen en base64 (si no hay ruta)."
+        },
+        "nombre": {
+          "type": "string"
+        },
+        "lienzo_como_la_imagen": {
+          "type": "boolean",
+          "description": "Si es la primera capa de un lienzo rectangular, el lienzo pasa a tener el tamaño de la imagen (si no, el lienzo se queda como está)."
+        },
+        "ancho_mm": {
+          "type": "number",
+          "description": "Ancho que tendrá (sin deformarla)."
+        },
+        "x_mm": {
+          "type": "number"
+        },
+        "y_mm": {
+          "type": "number"
+        }
+      }
+    }
+  },
+  {
+    "name": "anadir_fondo",
+    "title": "Poner un fondo",
+    "description": "Pone (o cambia) el fondo: una capa que llena todo el lienzo (rectangular o redondo), va detrás de todo y sigue al lienzo si cambia de tamaño. De un color o con un degradado.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "color": {
+          "type": "string",
+          "description": "Color #rrggbb (blanco si no se dice)."
+        },
+        "degradado_hasta": {
+          "type": "string",
+          "description": "Si se da, degradado del color al de aquí."
+        },
+        "angulo": {
+          "type": "number",
+          "description": "Dirección del degradado en grados (90 = de arriba abajo)."
+        }
+      }
+    }
   },
   {
     "name": "cambiar_capa",
     "title": "Cambiar una capa",
-    "description": "Cambia una capa por su id: posición, medida (sin deformar), giro, opacidad, visible, bloqueada, color; en los textos, lo escrito, la fuente, el alto de letra o ponerlo alrededor del círculo; en las formas, relleno y contorno. Solo cambia lo que se pasa.",
-    "inputSchema": {"type": "object", "required": ["id"], "properties": {
-      "id": {"type": "integer"},
-      "x_mm": {"type": "number", "description": "Centro, desde el borde izquierdo."},
-      "y_mm": {"type": "number", "description": "Centro, desde el borde de arriba."},
-      "centrar": {"type": "string", "enum": ["ambos", "horizontal", "vertical"], "description": "Centrarla en el lienzo."},
-      "ancho_mm": {"type": "number", "description": "Ancho de lo que se ve, sin deformar."},
-      "alto_mm": {"type": "number", "description": "Alto de lo que se ve, sin deformar (si se pasan los dos, manda el ancho)."},
-      "giro": {"type": "number"},
-      "opacidad": {"type": "number", "minimum": 0, "maximum": 100},
-      "visible": {"type": "boolean"},
-      "bloqueada": {"type": "boolean"},
-      "color": {"type": "string", "description": "Texto: color de las letras. Forma o trazo: relleno sólido. Imagen: la pinta entera de ese color."},
-      "texto": {"type": "string"},
-      "fuente": {"type": "string"},
-      "alto_letra_mm": {"type": "number"},
-      "negrita": {"type": "boolean"},
-      "cursiva": {"type": "boolean"},
-      "arco": {"type": "number"},
-      "alrededor_del_circulo": {"type": "string", "enum": ["arriba", "abajo", "no"]},
-      "separacion_borde_mm": {"type": "number"},
-      "relleno": {"type": "string", "description": "Formas y trazos: color #rrggbb o «ninguno»."},
-      "contorno_mm": {"type": "number"},
-      "color_contorno": {"type": "string"}
-    }}
+    "description": "Cambia una capa por su id: posición, medida (sin deformar), giro, opacidad, visible, bloqueada, color; en los textos, lo escrito, la fuente, el alto de letra o ponerlo alrededor del círculo; en las formas, relleno y contorno. También el modo de fusión. Solo cambia lo que se pasa.",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "x_mm": {
+          "type": "number",
+          "description": "Centro, desde el borde izquierdo."
+        },
+        "y_mm": {
+          "type": "number",
+          "description": "Centro, desde el borde de arriba."
+        },
+        "centrar": {
+          "type": "string",
+          "enum": [
+            "ambos",
+            "horizontal",
+            "vertical"
+          ],
+          "description": "Centrarla en el lienzo."
+        },
+        "ancho_mm": {
+          "type": "number",
+          "description": "Ancho de lo que se ve, sin deformar."
+        },
+        "alto_mm": {
+          "type": "number",
+          "description": "Alto de lo que se ve, sin deformar (si se pasan los dos, manda el ancho)."
+        },
+        "giro": {
+          "type": "number"
+        },
+        "opacidad": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "visible": {
+          "type": "boolean"
+        },
+        "bloqueada": {
+          "type": "boolean"
+        },
+        "color": {
+          "type": "string",
+          "description": "Texto: color de las letras. Forma o trazo: relleno sólido. Imagen: la pinta entera de ese color."
+        },
+        "texto": {
+          "type": "string"
+        },
+        "fuente": {
+          "type": "string"
+        },
+        "alto_letra_mm": {
+          "type": "number"
+        },
+        "negrita": {
+          "type": "boolean"
+        },
+        "cursiva": {
+          "type": "boolean"
+        },
+        "arco": {
+          "type": "number"
+        },
+        "alrededor_del_circulo": {
+          "type": "string",
+          "enum": [
+            "arriba",
+            "abajo",
+            "no"
+          ]
+        },
+        "separacion_borde_mm": {
+          "type": "number"
+        },
+        "relleno": {
+          "type": "string",
+          "description": "Formas y trazos: color #rrggbb o «ninguno»."
+        },
+        "contorno_mm": {
+          "type": "number"
+        },
+        "color_contorno": {
+          "type": "string"
+        },
+        "modo_fusion": {
+          "type": "string",
+          "description": "Cómo se mezcla con todo lo que tiene debajo, como en Photoshop: normal, multiplicar, trama, superponer, luz suave, luz fuerte, color, tono, saturación, luminosidad, diferencia, oscurecer, aclarar… (los 27 modos; en castellano o en inglés). Ejemplo: un sólido encima en «color» tiñe lo de abajo."
+        }
+      }
+    }
   },
   {
     "name": "duplicar_capa",
     "title": "Duplicar una capa",
     "description": "Hace una copia de la capa, justo encima. Devuelve el id de la copia.",
-    "inputSchema": {"type": "object", "required": ["id"], "properties": {"id": {"type": "integer"}}}
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        }
+      }
+    }
   },
   {
     "name": "borrar_capas",
     "title": "Borrar capas",
     "description": "Borra las capas con esos id (se pueden recuperar con deshacer).",
-    "inputSchema": {"type": "object", "required": ["ids"], "properties": {"ids": {"type": "array", "items": {"type": "integer"}}}},
-    "annotations": {"destructiveHint": true}
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "ids"
+      ],
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "annotations": {
+      "destructiveHint": true
+    }
   },
   {
     "name": "ordenar_capa",
     "title": "Cambiar el orden de una capa",
     "description": "Pone una capa delante o detrás de las demás, o la sube o baja un puesto.",
-    "inputSchema": {"type": "object", "required": ["id", "posicion"], "properties": {
-      "id": {"type": "integer"},
-      "posicion": {"type": "string", "enum": ["al_frente", "al_fondo", "subir", "bajar"]}
-    }}
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "id",
+        "posicion"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "posicion": {
+          "type": "string",
+          "enum": [
+            "al_frente",
+            "al_fondo",
+            "subir",
+            "bajar"
+          ]
+        }
+      }
+    }
   },
   {
     "name": "combinar_formas",
     "title": "Unir y restar formas",
     "description": "Combina capas en una sola forma con contornos limpios para la láser. unir: todas en una figura; restar: a la de más abajo se le quitan las de encima (p. ej. el agujero de un llavero); cruce: solo lo que se solapa; quitar_cruce: todo menos lo que se solapa; convertir_en_forma (una sola capa): un texto pasa a letras unidas en un contorno, una imagen a su silueta. Valen formas, trazos, textos e imágenes. Devuelve el id del resultado.",
-    "inputSchema": {"type": "object", "required": ["ids", "operacion"], "properties": {
-      "ids": {"type": "array", "items": {"type": "integer"}, "description": "Las capas (dos o más; una sola para convertir_en_forma)."},
-      "operacion": {"type": "string", "enum": ["unir", "restar", "cruce", "quitar_cruce", "convertir_en_forma"]},
-      "guardar_originales": {"type": "boolean", "description": "Dejar las capas originales, ocultas (si no, se quitan)."}
-    }}
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "ids",
+        "operacion"
+      ],
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "description": "Las capas (dos o más; una sola para convertir_en_forma)."
+        },
+        "operacion": {
+          "type": "string",
+          "enum": [
+            "unir",
+            "restar",
+            "cruce",
+            "quitar_cruce",
+            "convertir_en_forma"
+          ]
+        },
+        "guardar_originales": {
+          "type": "boolean",
+          "description": "Dejar las capas originales, ocultas (si no, se quitan)."
+        }
+      }
+    }
   },
   {
     "name": "exportar",
     "title": "Exportar el diseño",
     "description": "Guarda el diseño como SVG (para la láser: como_se_ve con colores, o solo_contornos con las líneas de corte de 0,1 mm), PNG o JPG. Si no se da ruta y el proyecto está guardado en una carpeta, se guarda allí con el nombre del proyecto. Devuelve la ruta y la medida.",
-    "inputSchema": {"type": "object", "required": ["formato"], "properties": {
-      "formato": {"type": "string", "enum": ["svg", "png", "jpg"]},
-      "modo_svg": {"type": "string", "enum": ["como_se_ve", "solo_contornos"]},
-      "circulo_de_corte": {"type": "boolean", "description": "Lienzo circular: añadir el círculo del borde como línea de corte (por defecto, sí en solo_contornos)."},
-      "ruta": {"type": "string", "description": "Ruta completa del archivo que se crea."}
-    }}
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "formato"
+      ],
+      "properties": {
+        "formato": {
+          "type": "string",
+          "enum": [
+            "svg",
+            "png",
+            "jpg"
+          ]
+        },
+        "modo_svg": {
+          "type": "string",
+          "enum": [
+            "como_se_ve",
+            "solo_contornos"
+          ]
+        },
+        "circulo_de_corte": {
+          "type": "boolean",
+          "description": "Lienzo circular: añadir el círculo del borde como línea de corte (por defecto, sí en solo_contornos)."
+        },
+        "ruta": {
+          "type": "string",
+          "description": "Ruta completa del archivo que se crea."
+        }
+      }
+    }
   },
   {
     "name": "guardar_proyecto",
     "title": "Guardar el proyecto",
     "description": "Guarda el proyecto de Componer para seguir otro día. Si ya está guardado en una carpeta, guarda ahí. Si no, hay que dar una carpeta: se guarda allí el .krafsti con sus imágenes en imagenes/ (y esa carpeta queda vinculada).",
-    "inputSchema": {"type": "object", "properties": {
-      "carpeta": {"type": "string", "description": "Ruta completa de la carpeta (se crea si no existe)."},
-      "nombre": {"type": "string", "description": "Nombre del proyecto."}
-    }}
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "carpeta": {
+          "type": "string",
+          "description": "Ruta completa de la carpeta (se crea si no existe)."
+        },
+        "nombre": {
+          "type": "string",
+          "description": "Nombre del proyecto."
+        }
+      }
+    }
   },
   {
     "name": "abrir_proyecto",
     "title": "Abrir un proyecto",
     "description": "Abre un proyecto .krafsti (la ruta de una carpeta de proyecto o del archivo). Si hay cambios sin guardar, falla salvo descartar_cambios: true; pregunta antes al usuario.",
-    "inputSchema": {"type": "object", "required": ["ruta"], "properties": {
-      "ruta": {"type": "string"},
-      "descartar_cambios": {"type": "boolean"}
-    }}
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "ruta"
+      ],
+      "properties": {
+        "ruta": {
+          "type": "string"
+        },
+        "descartar_cambios": {
+          "type": "boolean"
+        }
+      }
+    }
   },
   {
     "name": "deshacer",
     "title": "Deshacer",
     "description": "Deshace los últimos cambios de Componer (también los que hizo el usuario).",
-    "inputSchema": {"type": "object", "properties": {"veces": {"type": "integer", "minimum": 1, "maximum": 80}}}
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "veces": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 80
+        }
+      }
+    }
   },
   {
     "name": "rehacer",
     "title": "Rehacer",
     "description": "Vuelve a hacer lo deshecho.",
-    "inputSchema": {"type": "object", "properties": {"veces": {"type": "integer", "minimum": 1, "maximum": 80}}}
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "veces": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 80
+        }
+      }
+    }
   }
 ]
