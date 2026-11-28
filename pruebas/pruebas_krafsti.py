@@ -360,6 +360,52 @@ async def main():
         check('asistente: anadir_fondo con degradado', not r['e'] and await T("()=>__T.ED.layers.filter(L=>L.fondo).length===1 && __T.ED.layers.find(L=>L.fondo).sh.fill.t==='linear'"), r['t'])
         await clear()
 
+        print('1.37: Retocar (suavizar, limpiar el color del borde, pincel blando, lazo, rango de color, máscara)')
+        await pg.click('#tabBg')
+        # una pieza beige con un filo blanco de 1 px (lo que quedó de un fondo blanco) y un pelillo suelto de 1 px
+        await ev(PNG_JS, [200, 200, """g.fillStyle='#fff'; g.beginPath(); g.arc(100,100,61,0,7); g.fill(); g.fillStyle='#c8a878'; g.beginPath(); g.arc(100,100,60,0,7); g.fill();
+            g.fillStyle='#fff'; g.fillRect(160,99,25,1);""", 'bgFile'])
+        await pg.wait_for_timeout(900)
+        A = "([x,y])=>{ const o=__T.BG.out, j=(y*__T.BG.W+x)*4; return [o[j],o[j+1],o[j+2],o[j+3]]; }"
+        edge0 = await ev(A, [100, 39])
+        await ev("()=>{ const e=document.getElementById('bgDeconW'); e.value=2; e.dispatchEvent(new Event('input')); }"); await pg.wait_for_timeout(400)
+        edge1 = await ev(A, [100, 39])
+        check('«Limpiar el color del borde» quita el filo blanco', edge0[0] > 235 and edge0[3] > 0 and abs(edge1[0]-200) < 12 and abs(edge1[2]-120) < 15, [edge0, edge1])
+        sp0 = await ev(A, [175, 99])
+        await ev("()=>{ const e=document.getElementById('bgSmooth'); e.value=3; e.dispatchEvent(new Event('input')); }"); await pg.wait_for_timeout(400)
+        sp1 = await ev(A, [175, 99]); inner = await ev(A, [100, 100])
+        check('«Suavizar el contorno» quita el pelillo suelto y deja la pieza', sp0[3] > 200 and sp1[3] == 0 and inner[3] == 255, [sp0, sp1, inner])
+        await ev("()=>{ for(const id of ['bgSmooth','bgDeconW']){ const e=document.getElementById(id); e.value=0; e.dispatchEvent(new Event('input')); } }")
+        # pincel blando: en el centro quita del todo, hacia el borde deja medio
+        await pg.click('label[for=bt-brush]')
+        r = await ev("""()=>{ const T=__T, BG=T.BG; document.getElementById('bgHard').value=0; document.getElementById('bgSize').value=40;
+            T.bgPush(); BG.stroke={x:100,y:100,cov:new Uint8Array(BG.W*BG.H),base:BG.undo[BG.undo.length-1],rm:true}; T.bgDab(100,100,20); T.bgEndStroke();
+            const K=BG.keep; return [K[100*BG.W+100], K[100*BG.W+112], K[100*BG.W+125]]; }""")
+        check('pincel con dureza 0: quita poco a poco hacia el borde', r[0] == 0 and 0 < r[1] < 255 and r[2] == 255, r)
+        a = await ev(A, [112, 100])
+        check('lo medio quitado sale medio transparente', 0 < a[3] < 255, a)
+        await ev("()=>__T.bgUndo()")
+        # lazo
+        await pg.click('label[for=bt-lasso]')
+        r = await ev("""()=>{ const T=__T; T.bgLs.pts=[{x:60,y:60},{x:100,y:60},{x:100,y:100},{x:60,y:100}]; T.bgLassoClose();
+            const K=T.BG.keep, W=T.BG.W; return [K[80*W+80], K[120*W+120]]; }""")
+        check('el lazo quita lo de dentro', r == [0, 255], r)
+        await ev("()=>{ document.getElementById('bgLassoOut').checked=true; const T=__T; T.bgLs.pts=[{x:110,y:110},{x:150,y:110},{x:150,y:150},{x:110,y:150}]; T.bgLassoClose(); document.getElementById('bgLassoOut').checked=false; }")
+        r = await ev("()=>{ const K=__T.BG.keep, W=__T.BG.W; return [K[120*W+120], K[100*W+40]]; }")
+        check('el lazo por fuera deja solo lo de dentro', r == [255, 0], r)
+        await ev("()=>{ __T.bgUndo(); __T.bgUndo(); }")
+        # rango de color
+        await pg.click('label[for=bt-range]')
+        r = await ev("""()=>{ const T=__T; T.bgRangePick(100,100,false); const S=T.BG.rsel, W=T.BG.W;
+            const shown=!document.getElementById('bgRangeBtns').hidden; T.bgRangeDo(false); const K=T.BG.keep; return [S[100*W+100], S[5*W+5], shown, K[100*W+100]]; }""")
+        check('rango de color: elige el beige en toda la imagen y lo quita', r == [255, 0, True, 0], r)
+        await ev("()=>__T.bgUndo()")
+        await pg.click('#bgViews [data-bv=mask]')
+        r = await ev("()=>{ const d=document.getElementById('bgCanvas').getContext('2d').getImageData(100,100,1,1).data, e=document.getElementById('bgCanvas').getContext('2d').getImageData(3,3,1,1).data; return [d[0],d[1],d[2],e[0],e[3]]; }")
+        check('vista «Máscara»: blanco lo que queda, negro lo quitado', r == [255, 255, 255, 0, 255], r)
+        await pg.click('#bgViews [data-bv=res]'); await pg.click('label[for=bt-wand]')
+        await pg.click('#tabEd')
+
         print('Guía')
         await pg.click('#hGuide'); await pg.wait_for_timeout(150)
         n = await pg.locator('.guideitem').count()

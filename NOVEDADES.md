@@ -1,5 +1,14 @@
 # Novedades de Krafsti Studio
 
+## 1.37 — 2026-11-28
+- **Retocar, con más control en los contornos:**
+  - **Limpiar el color del borde** (pestaña Borde): los píxeles del contorno toman el color de dentro; quita filos blancos o restos del fondo anterior, por ejemplo en las puntas del pelo.
+  - **Suavizar el contorno:** redondea escalones y quita picos y pelillos sueltos sin mover el borde.
+  - **Rango de color** (herramienta nueva): tocas un color y se marcan en rosa todos los parecidos de la imagen (Mayúsculas+clic añade más); «Parecido» y «Suavidad»; luego «Quitar estos colores» o «Dejar solo estos colores».
+  - **Lazo** (herramienta nueva): rodea una zona arrastrando, o punto a punto con clics, y se quita o se devuelve lo de dentro (o lo de fuera).
+  - **Pincel con dureza:** con menos dureza es blando y quita o devuelve poco a poco hacia el borde.
+  - **Vista «Máscara»:** blanco lo que queda, negro lo quitado, para cazar restos y agujeros.
+
 ## 1.36 — 2026-11-27
 - **Empieza en Componer**, y las pestañas van en este orden: Componer, Vectorizar, Retocar, Convertir («Convertir formato» pasa a «Convertir»).
 - **Fusión de capas:** en la pestaña Imagen, nuevo apartado «Fusión» con los 27 modos de Photoshop (Multiplicar, Trama, Superponer, Luz suave, Color, Tono, Saturación, Luminosidad, Diferencia, Restar, Dividir, Disolver…), en castellano y con su nombre en inglés, y ◀ ▶ para probarlos uno tras otro. Vale para cualquier capa y se mezcla con todo lo de debajo. Sale igual en el PNG y el JPG; en el SVG van los que el SVG entiende.
